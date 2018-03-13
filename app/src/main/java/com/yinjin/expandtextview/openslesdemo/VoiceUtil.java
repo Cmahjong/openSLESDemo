@@ -21,4 +21,6 @@ public class VoiceUtil {
     public native void stop();
     public native void pause();
     public native void replay();
+    public native void volumeAdd();
+    public native void volumeReduce();
 }

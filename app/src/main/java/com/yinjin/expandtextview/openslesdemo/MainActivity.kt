@@ -20,6 +20,9 @@ class MainActivity : AppCompatActivity() {
         tv2.setOnClickListener {
             voiceUtil.playAsset(assetManager, "mydream.m4a")
         }
+        tv1.setOnClickListener {
+            voiceUtil.playURL("http://mpge.5nd.com/2015/2015-11-26/69708/1.mp3")
+        }
         stop.setOnClickListener {
             voiceUtil.stop()
         }
@@ -27,7 +30,8 @@ class MainActivity : AppCompatActivity() {
             voiceUtil.pause()
         }
         play.setOnClickListener { voiceUtil.replay() }
-
+        volume_add.setOnClickListener { voiceUtil.volumeAdd() }
+        volume_reduce.setOnClickListener { voiceUtil.volumeReduce() }
     }
 
     companion object {

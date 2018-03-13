@@ -59,7 +59,7 @@ SLVolumeItf pcmPlayerVolume = NULL;
 
 //缓冲器队列接口
 SLAndroidSimpleBufferQueueItf pcmBufferQueue;
-SLuint32  playerState;
+SLuint32 playerState;
 FILE *pcmFile;
 void *buffer;
 
@@ -186,7 +186,7 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playAsset(JNIEnv *env, job
         (void) result;
     }
     //设置播放音量 （100 * -50：静音 ）
-    (*fdPlayerVolume)->SetVolumeLevel(fdPlayerVolume, 20 * -50);
+    (*fdPlayerVolume)->SetVolumeLevel(fdPlayerVolume, 0 * -50);
 }
 //播放URL地址
 extern "C"
@@ -209,7 +209,7 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playURL(JNIEnv *env, jobje
     if (result == SL_RESULT_SUCCESS) {
         result = (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(
                 outputMixEnvironmentalReverb, &reverbSettings);
-        (void)result;
+        (void) result;
     }
     //第三步，设置播放器参数和创建播放器
     // configure audio source
@@ -223,9 +223,10 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playURL(JNIEnv *env, jobje
     // create audio player
     const SLInterfaceID ids[3] = {SL_IID_SEEK, SL_IID_MUTESOLO, SL_IID_VOLUME};
     const SLboolean req[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
-    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &uriPlayerObject, &slDataSource, &audioSnk, 3, ids, req);
+    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &uriPlayerObject, &slDataSource,
+                                                &audioSnk, 3, ids, req);
 
-    (void)result;
+    (void) result;
 
     // release the Java string and UTF-8
     (*env).ReleaseStringUTFChars(uri, utf8);
@@ -241,34 +242,32 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playURL(JNIEnv *env, jobje
 
     // get the play interface
     result = (*uriPlayerObject)->GetInterface(uriPlayerObject, SL_IID_PLAY, &uriPlayerPlay);
-    (void)result;
+    (void) result;
 
 
     // get the volume interface
     result = (*uriPlayerObject)->GetInterface(uriPlayerObject, SL_IID_VOLUME, &uriPlayerVolume);
-    (void)result;
+    (void) result;
 
     if (NULL != uriPlayerPlay) {
 
         // set the player's state
         result = (*uriPlayerPlay)->SetPlayState(uriPlayerPlay, SL_PLAYSTATE_PLAYING);
-        (void)result;
+        (void) result;
     }
 
     //设置播放音量 （100 * -50：静音 ）
-    (*uriPlayerVolume)->SetVolumeLevel(uriPlayerVolume, 0 * -50);
+    (*uriPlayerVolume)->SetVolumeLevel(uriPlayerVolume,  1* -50);
 
 }
-void getPcmData(void **pcm)
-{
-    while(!feof(pcmFile))
-    {
+
+void getPcmData(void **pcm) {
+    while (!feof(pcmFile)) {
         fread(out_buffer, 44100 * 2 * 2, 1, pcmFile);
-        if(out_buffer == NULL)
-        {
+        if (out_buffer == NULL) {
             LOGI("%s", "read end");
             break;
-        } else{
+        } else {
             LOGI("%s", "reading");
         }
         *pcm = out_buffer;
@@ -276,8 +275,7 @@ void getPcmData(void **pcm)
     }
 }
 
-void * pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void * context)
-{
+void *pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bf, void *context) {
     //assert(NULL == context);
     getPcmData(&buffer);
     // for streaming playback, replace this test by logic to find and fill the next buffer
@@ -298,8 +296,7 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playPCM(JNIEnv *env, jobje
     release();
     const char *pamPath = (env)->GetStringUTFChars(pamPath_, JNI_FALSE);
     pcmFile = fopen(pamPath, "r");
-    if(pcmFile == NULL)
-    {
+    if (pcmFile == NULL) {
         LOGE("%s", "fopen file error");
         return;
     }
@@ -313,22 +310,24 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playPCM(JNIEnv *env, jobje
     const SLInterfaceID mids[1] = {SL_IID_ENVIRONMENTALREVERB};
     const SLboolean mreq[1] = {SL_BOOLEAN_FALSE};
     result = (*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 1, mids, mreq);
-    (void)result;
+    (void) result;
     result = (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
-    (void)result;
-    result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB, &outputMixEnvironmentalReverb);
+    (void) result;
+    result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB,
+                                              &outputMixEnvironmentalReverb);
     if (SL_RESULT_SUCCESS == result) {
         result = (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(
                 outputMixEnvironmentalReverb, &reverbSettings);
-        (void)result;
+        (void) result;
     }
     SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
     SLDataSink audioSnk = {&outputMix, NULL};
 
 
     // 第三步，配置PCM格式信息
-    SLDataLocator_AndroidSimpleBufferQueue android_queue={SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,2};
-    SLDataFormat_PCM pcm={
+    SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
+                                                            2};
+    SLDataFormat_PCM pcm = {
             SL_DATAFORMAT_PCM,//播放pcm格式的数据
             2,//2个声道（立体声）
             SL_SAMPLINGRATE_44_1,//44100hz的频率
@@ -343,7 +342,8 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playPCM(JNIEnv *env, jobje
     const SLInterfaceID ids[3] = {SL_IID_BUFFERQUEUE, SL_IID_EFFECTSEND, SL_IID_VOLUME};
     const SLboolean req[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
 
-    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &pcmPlayerObject, &slDataSource, &audioSnk, 3, ids, req);
+    result = (*engineEngine)->CreateAudioPlayer(engineEngine, &pcmPlayerObject, &slDataSource,
+                                                &audioSnk, 3, ids, req);
     //初始化播放器
     (*pcmPlayerObject)->Realize(pcmPlayerObject, SL_BOOLEAN_FALSE);
 
@@ -354,7 +354,8 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_playPCM(JNIEnv *env, jobje
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_BUFFERQUEUE, &pcmBufferQueue);
     //缓冲接口回调
     (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue,
-                                        (slAndroidSimpleBufferQueueCallback) pcmBufferCallBack, NULL);
+                                        (slAndroidSimpleBufferQueueCallback) pcmBufferCallBack,
+                                        NULL);
 //    获取音量接口
     (*pcmPlayerObject)->GetInterface(pcmPlayerObject, SL_IID_VOLUME, &pcmPlayerVolume);
 
@@ -372,7 +373,7 @@ JNIEXPORT void JNICALL
 Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_stop(JNIEnv *env, jobject instance) {
     SLresult result;
     if (NULL != fdPlayerPlay) {
-        result = (*fdPlayerPlay)->GetPlayState(fdPlayerPlay,&playerState);
+        result = (*fdPlayerPlay)->GetPlayState(fdPlayerPlay, &playerState);
         (void) result;
         if (playerState == SL_PLAYSTATE_PLAYING) {
             (*fdPlayerPlay)->SetPlayState(fdPlayerPlay, SL_PLAYSTATE_STOPPED);
@@ -388,7 +389,7 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_pause(JNIEnv *env, jobject
 
     SLresult result;
     if (NULL != fdPlayerPlay) {
-        result = (*fdPlayerPlay)->GetPlayState(fdPlayerPlay,&playerState);
+        result = (*fdPlayerPlay)->GetPlayState(fdPlayerPlay, &playerState);
         (void) result;
         if (playerState == SL_PLAYSTATE_PLAYING) {
             (*fdPlayerPlay)->SetPlayState(fdPlayerPlay, SL_PLAYSTATE_PAUSED);
@@ -403,12 +404,40 @@ Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_replay(JNIEnv *env, jobjec
 
     SLresult result;
     if (NULL != fdPlayerPlay) {
-        result = (*fdPlayerPlay)->GetPlayState(fdPlayerPlay,&playerState);
+        result = (*fdPlayerPlay)->GetPlayState(fdPlayerPlay, &playerState);
         (void) result;
 
         if (playerState == SL_PLAYSTATE_PAUSED) {
             (*fdPlayerPlay)->SetPlayState(fdPlayerPlay, SL_PLAYSTATE_PLAYING);
         }
+    }
+
+}
+//音量增加
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_volumeAdd(JNIEnv *env, jobject instance) {
+    SLresult lresult;
+    SLmillibel volume = NULL;
+    if (fdPlayerVolume != NULL) {
+        (*fdPlayerVolume)->GetVolumeLevel(fdPlayerVolume, &volume);
+        LOGE("%S",volume)
+        (*fdPlayerVolume)->SetVolumeLevel(fdPlayerVolume, (volume + 50));
+        LOGE("%S",volume)
+    }
+
+}
+//音量减少
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_yinjin_expandtextview_openslesdemo_VoiceUtil_volumeReduce(JNIEnv *env, jobject instance) {
+    SLresult lresult;
+    SLmillibel volume = NULL;
+    if (fdPlayerVolume != NULL) {
+        (*fdPlayerVolume)->GetVolumeLevel(fdPlayerVolume, &volume);
+        LOGE("%S",volume)
+        (*fdPlayerVolume)->SetVolumeLevel(fdPlayerVolume,(volume - 50));
+        LOGE("%S",volume)
     }
 
 }
